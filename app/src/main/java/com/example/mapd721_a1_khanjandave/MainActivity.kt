@@ -108,6 +108,7 @@ fun Greeting() {
 
 }
 
+// body function with all the design
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
 fun Body(paddingValues: PaddingValues){
@@ -126,14 +127,16 @@ fun Body(paddingValues: PaddingValues){
     val savedEmailState = dataStore.getEmail.collectAsState(initial = "")
     val savedIdState = dataStore.getId.collectAsState(initial = "")
 
-
+    // declare variable using remember to store the state
     var username by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var id by remember { mutableStateOf("") }
 
+    // manage cursor focus
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
 
+    // design
     Column (
         modifier =
         Modifier
@@ -160,6 +163,7 @@ fun Body(paddingValues: PaddingValues){
                 ) },
             shape = RoundedCornerShape(5.dp),
             colors = TextFieldDefaults.outlinedTextFieldColors(
+                // display color based on value
                 containerColor = if (username == savedUsernameState.value && savedUsernameState.value!!.isNotEmpty()) lightBlue else lightGrey,
                 focusedBorderColor = if (username.isNotEmpty()) darkBlue else darkGrey,
                 unfocusedBorderColor = if (username.isNotEmpty()) darkBlue else darkGrey
@@ -183,6 +187,7 @@ fun Body(paddingValues: PaddingValues){
                 ) },
             shape = RoundedCornerShape(5.dp),
             colors = TextFieldDefaults.outlinedTextFieldColors(
+                // display color based on value
                 containerColor = if (email == savedEmailState.value && savedEmailState.value!!.isNotEmpty()) lightBlue else lightGrey,
                 focusedBorderColor = if (email.isNotEmpty()) darkBlue else darkGrey,
                 unfocusedBorderColor = if (email.isNotEmpty()) darkBlue else darkGrey
@@ -198,6 +203,7 @@ fun Body(paddingValues: PaddingValues){
                 .height(50.dp)
                 .focusRequester(focusRequester),
             value = id,
+
             onValueChange = {id = it},
             placeholder = {
                 Text(
@@ -206,6 +212,7 @@ fun Body(paddingValues: PaddingValues){
                 ) },
             shape = RoundedCornerShape(5.dp),
             colors = TextFieldDefaults.outlinedTextFieldColors(
+                // display color based on value
                 containerColor = if (id == savedIdState.value && savedIdState.value!!.isNotEmpty()) lightBlue else lightGrey,
                 focusedBorderColor = if (id.isNotEmpty()) darkBlue else darkGrey,
                 unfocusedBorderColor = if (id.isNotEmpty()) darkBlue else darkGrey,
@@ -220,11 +227,15 @@ fun Body(paddingValues: PaddingValues){
         ){
             OutlinedButton(
                 onClick = {
+                    // manage button click based on value and load data in text field
+                    if(savedUsernameState.value!!.isEmpty() && savedEmailState.value!!.isEmpty() && savedIdState.value!!.isEmpty()){
+                        Toast.makeText(context,"Values not found",Toast.LENGTH_SHORT).show()
+                    }else{
+                        username = savedUsernameState.value ?: ""
+                        email = savedEmailState.value ?: ""
+                        id = savedIdState.value ?: ""
+                    }
 
-                    Log.d("hello","${savedUsernameState}")
-                    username = savedUsernameState.value ?: ""
-                    email = savedEmailState.value ?: ""
-                    id = savedIdState.value ?: ""
                     focusManager.clearFocus()
 
                 },
@@ -243,8 +254,7 @@ fun Body(paddingValues: PaddingValues){
 
             OutlinedButton(
                 onClick = {
-                    //launch the class in a coroutine scope
-
+                    // manage save button and store data into data store
                     if (username.isNotEmpty() && email.isNotEmpty() && id.isNotEmpty()){
                         scope.launch {
                             dataStore.saveData(username, email, id)
@@ -273,7 +283,16 @@ fun Body(paddingValues: PaddingValues){
             }
 
             OutlinedButton(
-                onClick = { },
+                onClick = {
+                    // manage clear data button and clear the data from data store
+                    scope.launch {
+                        dataStore.clearData()
+                        username = ""
+                        email = ""
+                        id = ""
+                    }
+
+                },
                 shape = RoundedCornerShape(5.dp),
                 colors = ButtonDefaults.outlinedButtonColors(
                     containerColor = lightRed,

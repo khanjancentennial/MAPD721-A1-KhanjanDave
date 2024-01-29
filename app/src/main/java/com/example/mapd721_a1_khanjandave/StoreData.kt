@@ -52,7 +52,12 @@ class StoreData(private val context: Context) {
         }
     }
 
-
+    // function to clear all the data
+    suspend fun clearData() {
+        context.dataStore.edit { preferences ->
+            preferences.clear()
+        }
+    }
 
 
 }
