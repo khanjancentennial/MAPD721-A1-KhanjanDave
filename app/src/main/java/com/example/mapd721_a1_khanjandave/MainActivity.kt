@@ -2,6 +2,8 @@ package com.example.mapd721_a1_khanjandave
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.BorderStroke
@@ -12,6 +14,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -29,26 +32,37 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.mapd721_a1_khanjandave.ui.theme.MAPD721A1KhanjanDaveTheme
+import com.example.mapd721_a1_khanjandave.ui.theme.darkBlue
 import com.example.mapd721_a1_khanjandave.ui.theme.darkGreen
 import com.example.mapd721_a1_khanjandave.ui.theme.darkGrey
 import com.example.mapd721_a1_khanjandave.ui.theme.darkRed
 import com.example.mapd721_a1_khanjandave.ui.theme.darkYellow
+import com.example.mapd721_a1_khanjandave.ui.theme.lightBlue
 import com.example.mapd721_a1_khanjandave.ui.theme.lightGreen
 import com.example.mapd721_a1_khanjandave.ui.theme.lightGrey
 import com.example.mapd721_a1_khanjandave.ui.theme.lightRed
 import com.example.mapd721_a1_khanjandave.ui.theme.lightYellow
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -94,17 +108,31 @@ fun Greeting() {
 
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
 fun Body(paddingValues: PaddingValues){
+
+    // context
+    val context = LocalContext.current
+
+    // scope
+    val scope = rememberCoroutineScope()
+
+    // datastore class access using variable
+    val dataStore = StoreData(context)
+
+    // get saved username, email and id
+    val savedUsernameState = dataStore.getUsername.collectAsState(initial = "")
+    val savedEmailState = dataStore.getEmail.collectAsState(initial = "")
+    val savedIdState = dataStore.getId.collectAsState(initial = "")
+
+
     var username by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var id by remember { mutableStateOf("") }
 
-
-
-
-
+    val focusRequester = remember { FocusRequester() }
+    val focusManager = LocalFocusManager.current
 
     Column (
         modifier =
@@ -120,19 +148,23 @@ fun Body(paddingValues: PaddingValues){
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 10.dp)
-                .height(45.dp),
+                .height(50.dp)
+                .focusRequester(focusRequester),
             value = username,
             onValueChange = {username = it},
             placeholder = {
                 Text(
                     text = "Username",
-                    fontSize = 12.sp,
+                    fontSize = 14.sp,
                     modifier = Modifier
-                        .padding(start = 10.dp)
                 ) },
             shape = RoundedCornerShape(5.dp),
-            colors = TextFieldDefaults.textFieldColors(
-                containerColor = Color.LightGray
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                containerColor = if (username == savedUsernameState.value && savedUsernameState.value!!.isNotEmpty()) lightBlue else lightGrey,
+                focusedBorderColor = if (username.isNotEmpty()) darkBlue else darkGrey,
+                unfocusedBorderColor = if (username.isNotEmpty()) darkBlue else darkGrey
+
+
             )
 
         )
@@ -140,48 +172,62 @@ fun Body(paddingValues: PaddingValues){
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 5.dp)
-                .height(45.dp),
+                .height(50.dp)
+                .focusRequester(focusRequester),
             value = email,
             onValueChange = {email = it},
             placeholder = {
                 Text(
                     text = "Email",
-                    fontSize = 12.sp,
-                    modifier = Modifier.padding(start = 10.dp)
+                    fontSize = 14.sp,
                 ) },
             shape = RoundedCornerShape(5.dp),
-            colors = TextFieldDefaults.textFieldColors(
-                containerColor = Color.LightGray
-            )
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                containerColor = if (email == savedEmailState.value && savedEmailState.value!!.isNotEmpty()) lightBlue else lightGrey,
+                focusedBorderColor = if (email.isNotEmpty()) darkBlue else darkGrey,
+                unfocusedBorderColor = if (email.isNotEmpty()) darkBlue else darkGrey
+
+
+            ),
 
         )
         OutlinedTextField(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 10.dp)
-                .height(45.dp),
+                .height(50.dp)
+                .focusRequester(focusRequester),
             value = id,
             onValueChange = {id = it},
             placeholder = {
                 Text(
                     text = "Id",
-                    fontSize = 12.sp,
-                    modifier = Modifier.padding(start = 10.dp)
+                    fontSize = 14.sp,
                 ) },
             shape = RoundedCornerShape(5.dp),
-            colors = TextFieldDefaults.textFieldColors(
-                containerColor = Color.LightGray
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                containerColor = if (id == savedIdState.value && savedIdState.value!!.isNotEmpty()) lightBlue else lightGrey,
+                focusedBorderColor = if (id.isNotEmpty()) darkBlue else darkGrey,
+                unfocusedBorderColor = if (id.isNotEmpty()) darkBlue else darkGrey,
             )
 
         )
         Row (
             modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 10.dp),
+                .fillMaxWidth()
+                .padding(vertical = 10.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ){
             OutlinedButton(
-                onClick = { },
+                onClick = {
+
+                    Log.d("hello","${savedUsernameState}")
+                    username = savedUsernameState.value ?: ""
+                    email = savedEmailState.value ?: ""
+                    id = savedIdState.value ?: ""
+                    focusManager.clearFocus()
+
+                },
                 shape = RoundedCornerShape(5.dp),
                 colors = ButtonDefaults.outlinedButtonColors(
                     containerColor = lightYellow
@@ -196,7 +242,23 @@ fun Body(paddingValues: PaddingValues){
             }
 
             OutlinedButton(
-                onClick = { },
+                onClick = {
+                    //launch the class in a coroutine scope
+
+                    if (username.isNotEmpty() && email.isNotEmpty() && id.isNotEmpty()){
+                        scope.launch {
+                            dataStore.saveData(username, email, id)
+                            username = ""
+                            email = ""
+                            id = ""
+                        }
+                        Toast.makeText(context,"Data saved successfully",Toast.LENGTH_SHORT).show()
+                        focusManager.clearFocus()
+                    }else{
+                        Toast.makeText(context,"Please fill all the details",Toast.LENGTH_SHORT).show()
+                    }
+
+                },
                 shape = RoundedCornerShape(5.dp),
                 colors = ButtonDefaults.outlinedButtonColors(
                     containerColor = lightGreen
@@ -232,9 +294,12 @@ fun Body(paddingValues: PaddingValues){
             modifier = Modifier
                 .height(80.dp)
                 .fillMaxWidth()
-                .background(color = lightGrey,
-                    shape = RoundedCornerShape(10.dp))
-                .border(BorderStroke(2.dp, darkGrey),
+                .background(
+                    color = lightGrey,
+                    shape = RoundedCornerShape(10.dp)
+                )
+                .border(
+                    BorderStroke(2.dp, darkGrey),
                     shape = RoundedCornerShape(10.dp)
                 ),
             verticalArrangement = Arrangement.Center,
